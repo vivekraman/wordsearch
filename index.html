@@ -23,6 +23,7 @@
 
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="fractions-style.css">
+  <link rel="stylesheet" href="homophones-style.css">
 </head>
 <body>
 
@@ -51,6 +52,13 @@
         <div>
           <span class="pick-label">Fractions</span>
           <span class="pick-desc">Compare fractions: which is bigger?</span>
+        </div>
+      </button>
+      <button class="game-pick-btn" data-game="homophones">
+        <span class="pick-emoji">👂</span>
+        <div>
+          <span class="pick-label">Homophones</span>
+          <span class="pick-desc">Pick the right word to complete the sentence</span>
         </div>
       </button>
     </div>
@@ -86,6 +94,19 @@
       <div id="fractions-feedback" class="hidden"></div>
     </div>
 
+    <!-- Homophones game area -->
+    <div id="game-homophones" class="hidden">
+      <div id="homophones-progress"></div>
+      <div id="homophones-card">
+        <p id="homophones-sentence"></p>
+      </div>
+      <div id="homophones-word-buttons">
+        <button class="word-btn" id="word-btn-a"></button>
+        <button class="word-btn" id="word-btn-b"></button>
+      </div>
+      <div id="homophones-feedback" class="hidden"></div>
+    </div>
+
   </main>
 
   <!-- Category picker modal -->
@@ -111,6 +132,7 @@
   <script src="words.js"></script>
   <script src="script.js"></script>
   <script src="fractions.js"></script>
+  <script src="homophones.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js');
