@@ -1,0 +1,116 @@
+/* ── Homophones game layout ── */
+
+#game-homophones {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+#homophones-progress {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+}
+
+/* ── Sentence card ── */
+#homophones-card {
+  width: 100%;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  padding: 28px 24px;
+  text-align: center;
+}
+
+#homophones-sentence {
+  font-size: clamp(1.1rem, 4.5vw, 1.4rem);
+  font-weight: 600;
+  color: #334;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ── Blank placeholder in sentence ── */
+.sentence-blank {
+  display: inline-block;
+  color: #aaa;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  border-bottom: 3px solid #aaa;
+  padding-bottom: 1px;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* ── Filled word after answer ── */
+.sentence-filled {
+  font-weight: 800;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.fill-correct {
+  color: #2e7d32;
+  background: #e8f5e9;
+}
+
+.fill-wrong {
+  color: #c62828;
+  background: #fdecea;
+}
+
+/* ── Word choice buttons ── */
+#homophones-word-buttons {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+  justify-content: center;
+}
+
+.word-btn {
+  flex: 1;
+  padding: 20px 12px;
+  font-size: clamp(1.1rem, 5vw, 1.5rem);
+  font-weight: 800;
+  border: 3px solid #c8ddf5;
+  border-radius: 14px;
+  background: #f0f6ff;
+  cursor: pointer;
+  color: #334;
+  transition: all 0.12s;
+  letter-spacing: 0.01em;
+}
+
+.word-btn:hover:not(:disabled) {
+  background: #4a90e2;
+  border-color: #4a90e2;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74,144,226,0.3);
+}
+
+.word-btn:active:not(:disabled) {
+  transform: scale(0.95);
+  filter: brightness(0.9);
+}
+
+.word-btn.word-correct {
+  background: var(--color-found);
+  border-color: var(--color-found);
+  color: white;
+}
+
+.word-btn.word-wrong {
+  background: var(--color-miss);
+  border-color: var(--color-miss);
+  color: white;
+}
+
+.word-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}

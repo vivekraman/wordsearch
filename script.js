@@ -472,6 +472,7 @@ function newGame(category) {
   renderWordList();
   renderBackground(category);
 
+  document.getElementById('win-heading').textContent = 'You found all the words!';
   winOverlay.classList.add('hidden');
   startTimer();
 }
@@ -527,9 +528,10 @@ categoryModal.addEventListener('click', (e) => {
 let activeGame = null; // null = on menu, 'wordsearch' | 'fractions'
 
 const menuEl = document.getElementById('game-menu');
-const gameWordSearchEl = document.getElementById('game-wordsearch');
-const gameFractionsEl = document.getElementById('game-fractions');
-const btnHomeEl = document.getElementById('btn-home');
+const gameWordSearchEl  = document.getElementById('game-wordsearch');
+const gameFractionsEl   = document.getElementById('game-fractions');
+const gameHomophonesEl  = document.getElementById('game-homophones');
+const btnHomeEl         = document.getElementById('btn-home');
 
 function showMenu() {
   stopTimer();
@@ -537,6 +539,7 @@ function showMenu() {
   menuEl.classList.remove('hidden');
   gameWordSearchEl.classList.add('hidden');
   gameFractionsEl.classList.add('hidden');
+  gameHomophonesEl.classList.add('hidden');
   btnHomeEl.classList.add('hidden');
   timerEl.classList.add('hidden');
   document.body.classList.remove('theme-dark');
@@ -549,14 +552,13 @@ function switchToGame(gameKey) {
   menuEl.classList.add('hidden');
   btnHomeEl.classList.remove('hidden');
   timerEl.classList.remove('hidden');
-  gameWordSearchEl.classList.toggle('hidden', gameKey !== 'wordsearch');
-  gameFractionsEl.classList.toggle('hidden', gameKey !== 'fractions');
+  gameWordSearchEl.classList.toggle('hidden',  gameKey !== 'wordsearch');
+  gameFractionsEl.classList.toggle('hidden',   gameKey !== 'fractions');
+  gameHomophonesEl.classList.toggle('hidden',  gameKey !== 'homophones');
   activeGame = gameKey;
-  if (gameKey === 'wordsearch') {
-    newGame(currentCategory);
-  } else {
-    fractionsNewGame();
-  }
+  if (gameKey === 'wordsearch')       newGame(currentCategory);
+  else if (gameKey === 'homophones')  homophonesNewGame();
+  else                                fractionsNewGame();
 }
 
 document.querySelectorAll('.game-pick-btn').forEach(btn => {
