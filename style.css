@@ -1,6 +1,6 @@
 /* ── Custom properties ── */
 :root {
-  --grid-size: 12;
+  --grid-size: 10;
   --gap: 2px;
   --cell-size: calc((100vw - 32px - (var(--grid-size) - 1) * var(--gap)) / var(--grid-size));
   --color-bg: #eef4fb;
