@@ -530,3 +530,16 @@ main {
   font-size: 1rem;
   color: #666;
 }
+
+/* ── Build label ── */
+#build-label {
+  position: fixed;
+  bottom: 4px;
+  right: 6px;
+  font-size: 10px;
+  opacity: 0.35;
+  color: #000;
+  pointer-events: none;
+  user-select: none;
+  z-index: 9999;
+}
