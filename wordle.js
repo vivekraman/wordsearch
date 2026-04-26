@@ -347,7 +347,23 @@ function wordleNewGame() {
     wordleGuesses   = saved.guesses;
     wordleInput     = saved.input || '';
     wordleGameOver  = saved.gameOver;
-    wordleKeyStates = saved.keyStates;
+
+    // Recompute key states from guesses — more reliable than the saved
+    // keyStates, which can be stale if the user navigated away during a
+    // flip animation (before the async callback updated them).
+    wordleKeyStates = {};
+    const KS_PRIORITY = { absent: 0, present: 1, correct: 2 };
+    for (const guess of wordleGuesses) {
+      const scores = wordleScore(guess, wordleAnswer);
+      for (let i = 0; i < WORDLE_COLS; i++) {
+        const letter = guess[i];
+        const state  = scores[i];
+        if (!wordleKeyStates[letter] || KS_PRIORITY[state] > KS_PRIORITY[wordleKeyStates[letter]]) {
+          wordleKeyStates[letter] = state;
+        }
+      }
+    }
+
     wordleRestoreBoard();
     wordleRenderKeyboard();
     for (const [letter, state] of Object.entries(wordleKeyStates)) {
