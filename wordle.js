@@ -15,8 +15,9 @@ const KB_ROWS = [
 
 /* ── State ── */
 let wordleAnswer = '';
-let wordleGuesses = [];       // submitted guesses
-let wordleInput = '';         // current row input (0–4 chars)
+let wordleGuesses = [];                          // submitted guesses
+let wordleInput   = [null, null, null, null];    // current row, sparse array
+let wordleCursor  = 0;                           // active column (0–3)
 let wordleGameOver = false;
 let wordleKeyStates = {};     // letter → 'correct'|'present'|'absent'
 
@@ -77,11 +78,14 @@ function wordleHandleKey(key) {
   if (wordleGameOver) return;
 
   if (key === '⌫' || key === 'Backspace') {
-    if (wordleInput.length > 0) {
-      wordleInput = wordleInput.slice(0, -1);
-      wordleUpdateRow();
-      wordleSaveState();
+    if (wordleInput[wordleCursor]) {
+      wordleInput[wordleCursor] = null;
+    } else if (wordleCursor > 0) {
+      wordleCursor--;
+      wordleInput[wordleCursor] = null;
     }
+    wordleUpdateRow();
+    wordleSaveState();
     return;
   }
 
@@ -90,11 +94,13 @@ function wordleHandleKey(key) {
     return;
   }
 
-  if (/^[A-Za-z]$/.test(key) && wordleInput.length < WORDLE_COLS) {
-    wordleInput += key.toUpperCase();
+  if (/^[A-Za-z]$/.test(key)) {
+    const col = wordleCursor;
+    wordleInput[col] = key.toUpperCase();
+    if (wordleCursor < WORDLE_COLS - 1) wordleCursor++;
     wordleUpdateRow();
-    // Pop animation on the newly filled tile
-    const tile = wTile(wordleGuesses.length, wordleInput.length - 1);
+    // Pop animation on the tile that was just filled
+    const tile = wTile(wordleGuesses.length, col);
     if (tile) {
       tile.classList.remove('pop');
       void tile.offsetWidth; // reflow to restart animation
@@ -111,7 +117,8 @@ function wordleUpdateRow() {
     if (!tile) continue;
     const letter = wordleInput[c] || '';
     tile.textContent = letter;
-    tile.classList.toggle('filled', letter !== '');
+    tile.classList.toggle('filled',  !!wordleInput[c]);
+    tile.classList.toggle('cursor',  !wordleGameOver && c === wordleCursor);
   }
 }
 
@@ -152,7 +159,7 @@ function wordleRevealRow(row, scores, onComplete) {
 
     // Swap color at the midpoint
     setTimeout(() => {
-      tile.classList.remove('flip-in', 'filled', 'pop');
+      tile.classList.remove('flip-in', 'filled', 'pop', 'cursor');
       tile.classList.add(scores[c], 'flip-out');
     }, delay + FLIP_HALF);
 
@@ -186,20 +193,22 @@ function wordleUpdateKeyStates(guess, scores) {
    ══════════════════════════════════════════════ */
 
 function wordleSubmit() {
-  if (wordleInput.length < WORDLE_COLS) return;
+  if (wordleInput.some(l => !l)) return;
 
-  if (!WORDLE_VALID.has(wordleInput)) {
+  const guess = wordleInput.join('');
+
+  if (!WORDLE_VALID.has(guess)) {
     wordleShakeRow(wordleGuesses.length);
     wordleShowToast('Not in word list');
     return;
   }
 
-  const guess = wordleInput;
   const scores = wordleScore(guess, wordleAnswer);
   const row = wordleGuesses.length;
 
   wordleGuesses.push(guess);
-  wordleInput = '';
+  wordleInput  = [null, null, null, null];
+  wordleCursor = 0;
 
   wordleRevealRow(row, scores, () => {
     wordleUpdateKeyStates(guess, scores);
@@ -328,10 +337,13 @@ function wordleRestoreBoard() {
   }
 
   if (!wordleGameOver) {
-    for (let col = 0; col < wordleInput.length; col++) {
+    for (let col = 0; col < WORDLE_COLS; col++) {
       const tile = wTile(wordleGuesses.length, col);
-      tile.textContent = wordleInput[col];
-      tile.classList.add('filled');
+      if (wordleInput[col]) {
+        tile.textContent = wordleInput[col];
+        tile.classList.add('filled');
+      }
+      tile.classList.toggle('cursor', col === wordleCursor);
     }
   }
 }
@@ -343,10 +355,20 @@ function wordleNewGame() {
 
   const saved = wordleLoadState();
   if (saved) {
-    wordleAnswer    = saved.answer;
-    wordleGuesses   = saved.guesses;
-    wordleInput     = saved.input || '';
-    wordleGameOver  = saved.gameOver;
+    wordleAnswer   = saved.answer;
+    wordleGuesses  = saved.guesses;
+    wordleGameOver = saved.gameOver;
+
+    // Normalise saved input — old saves used a string, new saves use an array
+    let rawInput = saved.input;
+    if (typeof rawInput === 'string') {
+      rawInput = Array.from({ length: WORDLE_COLS }, (_, i) => rawInput[i] || null);
+    } else if (!Array.isArray(rawInput)) {
+      rawInput = [null, null, null, null];
+    }
+    wordleInput = rawInput;
+    const firstEmpty = wordleInput.indexOf(null);
+    wordleCursor = firstEmpty >= 0 ? firstEmpty : 0;
 
     // Recompute key states from guesses — more reliable than the saved
     // keyStates, which can be stale if the user navigated away during a
@@ -390,7 +412,8 @@ function wordleStartNewGame() {
   const answers = window.WORDLE_ANSWERS;
   wordleAnswer    = answers[Math.floor(Math.random() * answers.length)];
   wordleGuesses   = [];
-  wordleInput     = '';
+  wordleInput     = [null, null, null, null];
+  wordleCursor    = 0;
   wordleGameOver  = false;
   wordleKeyStates = {};
 
@@ -414,7 +437,20 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.getElementById('btn-wordle-new').addEventListener('click', () => {
-  const inProgress = wordleGuesses.length > 0 || wordleInput.length > 0;
+  const inProgress = wordleGuesses.length > 0 || wordleInput.some(Boolean);
   if (inProgress && !confirm('Start a new game? Your current progress will be lost.')) return;
   wordleStartNewGame();
+});
+
+document.getElementById('wordle-board').addEventListener('click', (e) => {
+  if (wordleGameOver || activeGame !== 'wordle') return;
+  const tile = e.target.closest('.wordle-tile');
+  if (!tile) return;
+  const parts = tile.id.split('-');   // wtile-{row}-{col}
+  const r = parseInt(parts[1]);
+  const c = parseInt(parts[2]);
+  if (r === wordleGuesses.length) {
+    wordleCursor = c;
+    wordleUpdateRow();
+  }
 });

@@ -55,6 +55,15 @@
   border-color: #888;
 }
 
+.wordle-tile.cursor:not(.correct):not(.present):not(.absent) {
+  border-color: #4a90e2;
+  background: rgba(74, 144, 226, 0.08);
+}
+
+.wordle-tile:not(.correct):not(.present):not(.absent) {
+  cursor: pointer;
+}
+
 /* Revealed states */
 .wordle-tile.correct {
   background: var(--color-found, #4caf74);
